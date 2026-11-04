@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cedric's Code Lab 2.0</title>
+<style>
+:root{--bg:#0b1220;--p:#142238;--p2:#1c304a;--line:#304761;--fg:#eef5ff;--muted:#a8bad1;--accent:#3478bd}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,Segoe UI,Arial}
+button,input,select,textarea{font:inherit;border-radius:8px;border:1px solid var(--line);padding:10px;background:#0c192a;color:var(--fg)}
+button{background:#244b75;cursor:pointer}
+button:hover{filter:brightness(1.2)}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.side{background:#0e1a2b;border-right:1px solid var(--line);padding:18px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-size:19px;font-weight:800;margin-bottom:4px}
+.muted{color:var(--muted)}
+.group{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7895b7;margin:18px 0 5px}
+.nav{display:block;width:100%;text-align:left;background:transparent;border:0;margin:3px 0}
+.nav.active,.nav:hover{background:var(--p2)}
+main{max-width:1100px;width:100%;padding:28px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.view{display:none}
+.view.active{display:block}
+.hero,.tool,.card{background:var(--p);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.hero{background:linear-gradient(120deg,#17436b,#17283f)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:9px 0}
+.grow{flex:1 1 220px}
+textarea{width:100%;min-height:125px}
+.result,.stat{background:#0c192a;border:1px solid var(--line);border-radius:8px;padding:12px;margin:10px 0;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.stat b{display:block;font-size:19px}
+.big{font-size:clamp(48px,9vw,76px);font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.list{padding:0;list-style:none}
+.list li{display:flex;align-items:center;gap:8px;background:var(--p2);padding:9px;margin:7px 0;border-radius:8px}
+.list span{flex:1}
+.done span{text-decoration:line-through;opacity:.6}
+.terminal{background:#020906;color:#64ff8e;padding:15px;min-height:250px;white-space:pre-wrap;font:14px/1.6 Consolas,monospace}
+body.light{--bg:#edf2f8;--p:#fff;--p2:#e4edf7;--line:#c7d5e5;--fg:#17283e;--muted:#53677f}
+body.light input,body.light select,body.light textarea,body.light .result,body.light .stat{background:#f7faff;color:#17283e}
+#matrix{position:fixed;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:20}
+#toast{position:fixed;right:18px;bottom:18px;background:#28547e;padding:10px 15px;border-radius:8px;opacity:0;z-index:30}
+#toast.show{opacity:1}
+@media(max-width:720px){
+.layout{display:block}
+.side{position:relative;height:auto}
+.navwrap{display:flex;overflow:auto;gap:5px}
+.nav{white-space:nowrap;width:auto}
+.group{display:none}
+main{padding:15px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="layout">
+<aside class="side">
+<div class="brand">🧪 CEDRIC'S CODE LAB</div>
+<div class="muted">Version 2.0 · All-in-one toolkit</div>
+
+<div class="navwrap">
+<div class="group">Workspace</div>
+<button class="nav active" data-view="home">🏠 Dashboard</button>
+
+<div class="group">Productivity</div>
+<button class="nav" data-view="todo">☑ To-do List</button>
+<button class="nav" data-view="notes">📝 Quick Notes</button>
+<button class="nav" data-view="timer">⏱ Focus Timer</button>
+
+<div class="group">Utilities</div>
+<button class="nav" data-view="converter">↔ Unit Converter</button>
+<button class="nav" data-view="password">🔐 Password Generator</button>
+<button class="nav" data-view="text">📋 Text Toolkit</button>
+<button class="nav" data-view="json">{} JSON Formatter</button>
+<button class="nav" data-view="base64">🔁 Base64 Tool</button>
+
+<div class="group">Browser & Developer</div>
+<button class="nav" data-view="browser">🌐 Browser Info</button>
+<button class="nav" data-view="bookmarks">🧩 Bookmarklet Builder</button>
+
+<div class="group">Fun Lab</div>
+<button class="nav" data-view="hacker">💻 Hacker Typer</button>
+<button class="nav" data-view="matrixTool">🟢 Matrix Rain</button>
+</div>
+</aside>
+
+<main>
+<div class="top">
+<h1 id="title">Dashboard</h1>
+<button id="theme">☀ / 🌙 Theme</button>
+</div>
+
+<section class="view active" id="home">
+<div class="hero">
+<h2>Welcome to Code Lab 2.0</h2>
+<p>Your all-in-one collection of productivity tools, browser utilities, developer helpers, and harmless visual experiments.</p>
+</div>
+
+<div class="stats">
+<div class="stat">Tools included<b>12</b></div>
+<div class="stat">External services<b>None</b></div>
+<div class="stat">Data storage<b>Local</b></div>
+</div>
+
+<div class="grid">
+<div class="card">
+<h3>☑ Productivity</h3>
+<p class="muted">Tasks, notes, focus timer.</p>
+<button data-go="todo">Open</button>
+</div>
+<div class="card">
+<h3>🔐 Utilities</h3>
+<p class="muted">Passwords, converters, text and data tools.</p>
+<button data-go="password">Open</button>
+</div>
+<div class="card">
+<h3>🌐 Browser</h3>
+<p class="muted">Browser information and bookmarklets.</p>
+<button data-go="browser">Open</button>
+</div>
+<div class="card">
+<h3>💻 Fun Lab</h3>
+<p class="muted">Fictional terminal and Matrix animation.</p>
+<button data-go="hacker">Open</button>
+</div>
+</div>
+</section>
+
+<section class="view" id="todo">
+<div class="tool">
+<h2>☑ To-do List</h2>
+<form id="taskForm" class="row">
+<input id="taskInput" class="grow" placeholder="Add a task..." required>
+<button>Add</button>
+</form>
+<div class="row">
+<button data-filter="all">All</button>
+<button data-filter="active">Active</button>
+<button data-filter="done">Completed</button>
+<button id="clearDone">Clear completed</button>
+</div>
+<ul class="list" id="tasks"></ul>
+<p class="muted" id="taskCount"></p>
+</div>
+</section>
+
+<section class="view" id="notes">
+<div class="tool">
+<h2>📝 Quick Notes</h2>
+<p class="muted">Automatically saved in this browser.</p>
+<textarea id="notesArea" placeholder="Write notes, ideas, reminders..."></textarea>
+<div class="row">
+<button id="downloadNotes">Download TXT</button>
+<button id="clearNotes">Clear notes</button>
+<span class="muted" id="noteStatus">Auto-save enabled</span>
+</div>
+</div>
+</section>
+
+<section class="view" id="timer">
+<div class="tool">
+<h2>⏱ Focus Timer</h2>
+<div class="big" id="clock">25:00</div>
+<p id="timerLabel" style="text-align:center">Focus session</p>
+<div class="row" style="justify-content:center">
+<button id="start">Start</button>
+<button id="pause">Pause</button>
+<button id="reset">Reset</button>
+</div>
+<div class="row" style="justify-content:center">
+<button data-min="25" data-label="Focus session">25 min focus</button>
+<button data-min="5" data-label="Short break">5 min break</button>
+<button data-min="15" data-label="Long break">15 min break</button>
+</div>
+</div>
+</section>
+
+<section class="view" id="converter">
+<div class="tool">
+<h2>↔ Unit Converter</h2>
+<div class="row">
+<input id="cv" type="number" value="1">
+<select id="kind">
+<option value="length">Length</option>
+<option value="weight">Weight</option>
+<option value="volume">Volume</option>
+<option value="speed">Speed</option>
+<option value="temp">Temperature</option>
+</select>
+</div>
+<div class="row">
+<select id="from"></select>
+<span>to</span>
+<select id="to"></select>
+</div>
+<div class="result" id="converted"></div>
+</div>
+</section>
+
+<section class="view" id="password">
+<div class="tool">
+<h2>🔐 Password Generator</h2>
+<p class="muted">Uses Web Crypto locally. Passwords are not sent or saved.</p>
+<label>Length (8–64) <input id="plen" type="number" min="8" max="64" value="20"></label>
+<div class="row">
+<label><input type="checkbox" id="upper" checked> Uppercase</label>
+<label><input type="checkbox" id="lower" checked> Lowercase</label>
+<label><input type="checkbox" id="nums" checked> Numbers</label>
+<label><input type="checkbox" id="symbols" checked> Symbols</label>
+</div>
+<div class="row">
+<input id="pout" class="grow" readonly>
+<button id="generate">Generate</button>
+<button id="copyPass">Copy</button>
+</div>
+<p class="muted" id="pstatus"></p>
+</div>
+</section>
+
+<section class="view" id="text">
+<div class="tool">
+<h2>📋 Text Toolkit</h2>
+<textarea id="textInput" placeholder="Enter or paste text..."></textarea>
+<div class="stats">
+<div class="stat">Words<b id="words">0</b></div>
+<div class="stat">Characters<b id="chars">0</b></div>
+<div class="stat">No spaces<b id="nospace">0</b></div>
+<div class="stat">Reading time<b id="reading">0 min</b></div>
+</div>
+<div class="row">
+<button data-case="upper">UPPERCASE</button>
+<button data-case="lower">lowercase</button>
+<button data-case="title">Title Case</button>
+<button id="cleanText">Clean whitespace</button>
+<button id="copyText">Copy</button>
+</div>
+</div>
+</section>
+
+<section class="view" id="json">
+<div class="tool">
+<h2>{ } JSON Formatter & Validator</h2>
+<textarea id="jsonInput" placeholder='{"hello":"world"}'></textarea>
+<div class="row">
+<button id="formatJson">Format</button>
+<button id="minifyJson">Minify</button>
+<button id="clearJson">Clear</button>
+</div>
+<div class="result" id="jsonResult">Results appear here.</div>
+</div>
+</section>
+
+<section class="view" id="base64">
+<div class="tool">
+<h2>🔁 Base64 Encoder / Decoder</h2>
+<p class="muted">Base64 is encoding, not encryption.</p>
+<textarea id="baseInput" placeholder="Text or Base64..."></textarea>
+<div class="row">
+<button id="encode">Encode</button>
+<button id="decode">Decode</button>
+<button id="copyBase">Copy result</button>
+</div>
+<div class="result" id="baseResult"></div>
+</div>
+</section>
+
+<section class="view" id="browser">
+<div class="tool">
+<h2>🌐 Browser & Device Information</h2>
+<p class="muted">Only details exposed to this webpage are displayed; some values may be unavailable or approximate.</p>
+<div class="stats" id="browserInfo"></div>
+<button id="refresh">Refresh</button>
+</div>
+</section>
+
+<section class="view" id="bookmarks">
+<div class="tool">
+<h2>🧩 Bookmarklet Builder</h2>
+<p class="muted">Copy a bookmarklet, save it as a browser bookmark URL, then click it on a webpage. This dashboard cannot control other tabs directly.</p>
+<select id="bmType">
+<option value="dark">Dark filter toggle</option>
+<option value="reader">Reader layout toggle</option>
+<option value="focus">Page focus toggle</option>
+<option value="stats">Reading statistics</option>
+<option value="copy">Copy page title and URL</option>
+</select>
+<div class="result" id="bmCode" style="font-family:monospace;word-break:break-all"></div>
+<button id="copyBm">Copy bookmarklet</button>
+</div>
+</section>
+
+<section class="view" id="hacker">
+<div class="tool">
+<h2>💻 Hacker Typer — Visual Simulation</h2>
+<p class="muted">Fictional terminal text only. No commands run and no systems are accessed.</p>
+<button id="clearTerminal">Clear</button>
+<pre class="terminal" id="terminal" tabindex="0">CEDRIC'S CODE LAB // SIMULATION
+READY — PRESS ANY KEY...</pre>
+</div>
+</section>
+
+<section class="view" id="matrixTool">
+<div class="tool">
+<h2>🟢 Matrix Rain</h2>
+<p class="muted">Decorative code-rain animation over this dashboard.</p>
+<div class="row">
+<button id="matrixStart">Start animation</button>
+<button id="matrixStop">Stop animation</button>
+</div>
+<p id="matrixStatus" class="muted">Stopped.</p>
+</div>
+</section>
+
+<p class="muted">CEDRIC'S CODE LAB 2.0 · Runs locally · Review source code before use</p>
+</main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+const $=id=>document.getElementById(id);
+const say=m=>{
+let t=$('toast');
+t.textContent=m;
+t.classList.add('show');
+setTimeout(()=>t.classList.remove('show'),1800);
+};
+
+const names={
+home:'Dashboard',
+todo:'To-do List',
+notes:'Quick Notes',
+timer:'Focus Timer',
+converter:'Unit Converter',
+password:'Password Generator',
+text:'Text Toolkit',
+json:'JSON Formatter',
+base64:'Base64 Tool',
+browser:'Browser Information',
+bookmarks:'Bookmarklet Builder',
+hacker:'Hacker Typer',
+matrixTool:'Matrix Rain'
+};
+
+function go(id){
+document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.view===id));
+$('title').textContent=names[id];
+}
+
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.view));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+$('theme').onclick=()=>{
+document.body.classList.toggle('light');
+localStorage.cl2theme=document.body.classList.contains('light')?'light':'dark';
+};
+
+if(localStorage.cl2theme==='light')document.body.classList.add('light');
+
+let tasks=[];
+try{tasks=JSON.parse(localStorage.cl2tasks||'[]')}catch{}
+let filter='all';
+
+function renderTasks(){
+let ul=$('tasks');
+ul.replaceChildren();
+
+tasks.filter(t=>filter==='all'||(filter==='done'?t.done:!t.done)).forEach(t=>{
+let li=document.createElement('li');
+if(t.done)li.className='done';
+
+let c=document.createElement('input');
+c.type='checkbox';
+c.checked=t.done;
+c.onchange=()=>{
+t.done=c.checked;
+saveTasks();
+};
+
+let s=document.createElement('span');
+s.textContent=t.text;
+
+let d=document.createElement('button');
+d.textContent='Delete';
+d.onclick=()=>{
+tasks=tasks.filter(x=>x.id!==t.id);
+saveTasks();
+};
+
+li.append(c,s,d);
+ul.append(li);
+});
+
+$('taskCount').textContent=
+tasks.filter(t=>!t.done).length+' active · '+
+tasks.filter(t=>t.done).length+' completed';
+}
+
+function saveTasks(){
+localStorage.cl2tasks=JSON.stringify(tasks);
+renderTasks();
+}
+
+$('taskForm').onsubmit=e=>{
+e.preventDefault();
+let v=$('taskInput');
+
+if(v.value.trim()){
+tasks.push({
+id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
+text:v.value.trim(),
+done:false
+});
+}
+
+v.value='';
+saveTasks();
+};
+
+document.querySelectorAll('[data-filter]').forEach(b=>{
+b.onclick=()=>{
+filter=b.dataset.filter;
+renderTasks();
+};
+});
+
+$('clearDone').onclick=()=>{
+tasks=tasks.filter(t=>!t.done);
+saveTasks();
+};
+
+renderTasks();
+
+$('notesArea').value=localStorage.cl2notes||'';
+$('notesArea').oninput=()=>{
+localStorage.cl2notes=$('notesArea').value;
+$('noteStatus').textContent='Saved locally.';
+};
+
+$('clearNotes').onclick=()=>{
+if(confirm('Clear saved notes?')){
+$('notesArea').value='';
+delete localStorage.cl2notes;
+say('Notes cleared');
+}
+};
+
+function download(n,c,type){
+let u=URL.createObjectURL(new Blob([c],{type}));
+let a=document.createElement('a');
+a.href=u;
+a.download=n;
+a.click();
+URL.revokeObjectURL(u);
+}
+
+$('downloadNotes').onclick=()=>download(
+'cedrics-notes.txt',
+$('notesArea').value,
+'text/plain'
+);
+
+let total=1500,left=1500,timer=null,label='Focus session';
+
+function draw(){
+$('clock').textContent=
+String(Math.floor(left/60)).padStart(2,'0')+':'+
+String(left%60).padStart(2,'0');
+}
+
+function pause(){
+clearInterval(timer);
+timer=null;
+}
+
+function reset(){
+pause();
+left=total;
+draw();
+}
+
+$('start').onclick=()=>{
+if(timer)return;
+
+timer=setInterval(()=>{
+left--;
+draw();
+
+if(left<=0){
+pause();
+$('timerLabel').textContent=label+' complete!';
+say(label+' complete!');
+}
+},1000);
+};
+
+$('pause').onclick=pause;
+$('reset').onclick=reset;
+
+document.querySelectorAll('[data-min]').forEach(b=>{
+b.onclick=()=>{
+total=Number(b.dataset.min)*60;
+left=total;
+label=b.dataset.label;
+$('timerLabel').textContent=label;
+reset();
+};
+});
+
+draw();
+
+const units={
+length:{m:1,km:1000,cm:.01,mm:.001,ft:.3048,in:.0254,mi:1609.344},
+weight:{kg:1,g:.001,lb:.45359237,oz:.0283495},
+volume:{L:1,mL:.001,gal:3.78541,cup:.236588},
+speed:{'m/s':1,'km/h':1/3.6,mph:.44704}
+};
+
+function fill(){
+let k=$('kind').value;
+let opts=k==='temp'?['°C','°F','K']:Object.keys(units[k]);
+
+$('from').replaceChildren();
+$('to').replaceChildren();
+
+opts.forEach(x=>{
+$('from').add(new Option(x,x));
+$('to').add(new Option(x,x));
+});
+
+if(opts.length>1)$('to').selectedIndex=1;
+convert();
+}
+
+function convert(){
+let k=$('kind').value;
+let v=Number($('cv').value);
+let a=$('from').value;
+let b=$('to').value;
+let r;
+
+if(k==='temp'){
+let c=a==='°C'?v:a==='°F'?(v-32)*5/9:v-273.15;
+r=b==='°C'?c:b==='°F'?c*9/5+32:c+273.15;
+}else{
+r=v*units[k][a]/units[k][b];
+}
+
+$('converted').textContent=
+Number.isFinite(r)
+?r.toLocaleString(undefined,{maximumFractionDigits:8})+' '+b
+:'Enter a valid value';
+}
+
+$('kind').onchange=fill;
+['cv','from','to'].forEach(id=>$(id).oninput=convert);
+fill();
+
+$('generate').onclick=()=>{
+let chars='';
+
+if($('upper').checked)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+if($('lower').checked)chars+='abcdefghijklmnopqrstuvwxyz';
+if($('nums').checked)chars+='0123456789';
+if($('symbols').checked)chars+='!@#$%^&*()-_=+[]{}?';
+
+if(!chars){
+$('pstatus').textContent='Select a character set.';
+return;
+}
+
+let n=Math.max(8,Math.min(64,Number($('plen').value)||20));
+let out='';
+
+while(out.length<n){
+let a=new Uint8Array(n-out.length);
+crypto.getRandomValues(a);
+let max=256-256%chars.length;
+
+for(let x of a){
+if(x<max&&out.length<n)out+=chars[x%chars.length];
+}
+}
+
+$('pout').value=out;
+$('pstatus').textContent='Generated locally. Use unique passwords.';
+};
+
+$('generate').click();
+
+async function copy(v){
+try{
+await navigator.clipboard.writeText(v);
+say('Copied');
+}catch{
+say('Clipboard permission unavailable');
+}
+}
+
+$('copyPass').onclick=()=>copy($('pout').value);
+$('textInput').oninput=stats;
+
+function stats(){
+let v=$('textInput').value;
+let t=v.trim();
+let w=t?t.split(/\s+/).length:0;
+
+$('words').textContent=w;
+$('chars').textContent=v.length;
+$('nospace').textContent=v.replace(/\s/g,'').length;
+$('reading').textContent=w?Math.max(1,Math.ceil(w/220))+' min':'0 min';
+}
+
+document.querySelectorAll('[data-case]').forEach(b=>{
+b.onclick=()=>{
+let v=$('textInput').value;
+
+$('textInput').value=
+b.dataset.case==='upper'?v.toUpperCase():
+b.dataset.case==='lower'?v.toLowerCase():
+v.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+
+stats();
+};
+});
+
+$('cleanText').onclick=()=>{
+$('textInput').value=$('textInput').value
+.replace(/[ \t]+/g,' ')
+.replace(/\n{3,}/g,'\n\n')
+.trim();
+stats();
+};
+
+$('copyText').onclick=()=>copy($('textInput').value);
+
+function json(mode){
+try{
+let v=JSON.parse($('jsonInput').value);
+
+$('jsonInput').value=
+mode==='min'?JSON.stringify(v):JSON.stringify(v,null,2);
+
+$('jsonResult').textContent='Valid JSON ✓';
+}catch(e){
+$('jsonResult').textContent='Invalid JSON: '+e.message;
+}
+}
+
+$('formatJson').onclick=()=>json('pretty');
+$('minifyJson').onclick=()=>json('min');
+
+$('clearJson').onclick=()=>{
+$('jsonInput').value='';
+$('jsonResult').textContent='Cleared.';
+};
+
+$('encode').onclick=()=>{
+try{
+$('baseResult').textContent=
+btoa(unescape(encodeURIComponent($('baseInput').value)));
+}catch(e){
+$('baseResult').textContent=e.message;
+}
+};
+
+$('decode').onclick=()=>{
+try{
+$('baseResult').textContent=
+decodeURIComponent(escape(atob($('baseInput').value.trim())));
+}catch{
+$('baseResult').textContent='Invalid Base64';
+}
+};
+
+$('copyBase').onclick=()=>copy($('baseResult').textContent);
+
+function browserInfo(){
+let arr=[
+['Language',navigator.language],
+['Platform',navigator.platform||'Unavailable'],
+['Online',navigator.onLine?'Yes':'No'],
+['Screen',screen.width+' × '+screen.height],
+['Viewport',innerWidth+' × '+innerHeight],
+['Logical CPU cores',navigator.hardwareConcurrency||'Unavailable'],
+['Device memory GB',navigator.deviceMemory||'Unavailable'],
+['Cookies',navigator.cookieEnabled?'Enabled':'Disabled'],
+['User agent',navigator.userAgent]
+];
+
+let box=$('browserInfo');
+box.replaceChildren();
+
+arr.forEach(([k,v])=>{
+let d=document.createElement('div');
+d.className='stat';
+
+let s=document.createElement('span');
+s.className='muted';
+s.textContent=k;
+
+let b=document.createElement('b');
+b.style.fontSize='13px';
+b.textContent=v;
+
+d.append(s,b);
+box.append(d);
+});
+}
+
+$('refresh').onclick=browserInfo;
+browserInfo();
+
+const bm={
+dark:"javascript:(()=>{let s=document.getElementById('cl-dark');if(s){s.remove();return}s=document.createElement('style');s.id='cl-dark';s.textContent='html{filter:invert(1) hue-rotate(180deg)!important}img,video,canvas{filter:invert(1) hue-rotate(180deg)!important}';document.head.appendChild(s)})();",
+
+reader:"javascript:(()=>{let s=document.getElementById('cl-reader');if(s){s.remove();return}s=document.createElement('style');s.id='cl-reader';s.textContent='body{max-width:850px!important;margin:30px auto!important;padding:24px!important;font:20px/1.7 Georgia,serif!important}';document.head.appendChild(s)})();",
+
+focus:"javascript:(()=>{let s=document.getElementById('cl-focus');if(s){s.remove();return}s=document.createElement('style');s.id='cl-focus';s.textContent='aside,nav,header,footer,[role=navigation],[role=complementary]{opacity:.08!important}';document.head.appendChild(s)})();",
+
+stats:"javascript:(()=>{let t=(document.body.innerText||'').trim(),w=t?t.split(/\\s+/).length:0;alert('Words: '+w+'\\nReading estimate: '+Math.max(1,Math.ceil(w/220))+' min')})();",
+
+copy:"javascript:(async()=>{let t=document.title+' — '+location.href;try{await navigator.clipboard.writeText(t);alert('Copied')}catch(e){prompt('Copy page details:',t)}})();"
+};
+
+function renderBm(){
+$('bmCode').textContent=bm[$('bmType').value];
+}
+
+$('bmType').onchange=renderBm;
+$('copyBm').onclick=()=>copy(bm[$('bmType').value]);
+renderBm();
+
+const demo=[
+'[DEMO] Loading fictional modules...',
+'[DEMO] Checking imaginary subsystem: OK',
+'[DEMO] Rendering terminal interface...',
+'[DEMO] No external connection attempted.',
+'[DEMO] Simulation sequence complete.'
+];
+
+let di=0;
+
+document.addEventListener('keydown',e=>{
+if(['Shift','Control','Alt','Meta','Tab'].includes(e.key)||
+!$('hacker').classList.contains('active'))return;
+
+$('terminal').textContent+='\n'+demo[di++%demo.length];
+});
+
+$('clearTerminal').onclick=()=>{
+di=0;
+$('terminal').textContent="CEDRIC'S CODE LAB // SIMULATION\nREADY — PRESS ANY KEY...";
+};
+
+// Matrix effect is decorative and limited to this page.
+const canvas=$('matrix');
+const ctx=canvas.getContext('2d');
+let raf=null,drops=[];
+
+function sizeCanvas(){
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+drops=Array(Math.ceil(innerWidth/16)).fill(1);
+}
+
+function frame(){
+ctx.fillStyle='rgba(0,0,0,.08)';
+ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle='#35ed78';
+ctx.font='15px monospace';
+
+drops.forEach((y,i)=>{
+ctx.fillText(String.fromCharCode(33+Math.random()*90),i*16,y*16);
+if(y*16>innerHeight&&Math.random()>.975)drops[i]=0;
+drops[i]++;
+});
+
+raf=requestAnimationFrame(frame);
+}
+
+$('matrixStart').onclick=()=>{
+if(raf)return;
+canvas.style.display='block';
+sizeCanvas();
+frame();
+$('matrixStatus').textContent='Running — press Stop to close.';
+};
+
+$('matrixStop').onclick=()=>{
+if(raf)cancelAnimationFrame(raf);
+raf=null;
+canvas.style.display='none';
+ctx.clearRect(0,0,canvas.width,canvas.height);
+$('matrixStatus').textContent='Stopped.';
+};
+
+addEventListener('resize',()=>{
+if(raf)sizeCanvas();
+});
+</script>
+</body>
+</html>
